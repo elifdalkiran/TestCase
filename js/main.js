@@ -5,7 +5,6 @@ Vue.component("bar-chart", {
     this.renderChart(this.chartData, this.options);
   },
   watch: {
-    // Chart data güncellendiğinde grafiği yeniden oluştur
     chartData: {
       handler(newData) {
         this.renderChart(newData, this.options);
@@ -34,46 +33,45 @@ var app = new Vue({
         excludeYoYData: true
       },
       chartData: {
-        labels: [], // X ekseni tarihleri
+        labels: [], 
          datasets: [
         {
           label: "Profit",
           backgroundColor: "#70eec4",
-          data: [], // Profit verileri
+          data: [],
         },
         {
           label: "FBA Sales",
           backgroundColor: "#8187E7",
-          data: [], // FBA Sales verileri
+          data: [], 
         },
         {
           label: "FBM Sales",
           backgroundColor: "#5D32E5",
-          data: [], // FBM Sales verileri
+          data: [], 
         },
       ],
-        },
-      // Grafik ayarları
+      },
       chartOptions: {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
           title: {
-            display: true, // Başlığı göstermek için true yapılır
-            text: "Daily Sales", // Başlık metni
+            display: true, 
+            text: "Daily Sales", 
             align: "start",
             font: {
-              size: 18, // Başlık yazı tipi boyutu
+              size: 18, 
             },
             padding: {
-              top: 10, // Başlık ile grafik arasındaki boşluk
-              bottom: 20, // Alt taraf boşluğu
+              top: 10, 
+              bottom: 20,
             },
           },
           legend: {
-            display: true, // Grafik için açıklama (legend)
-            position: "bottom", // Legend pozisyonu
-            pointStyle: 'circle', // Legend'deki simgeleri yuvarlak yapmak
+            display: true, 
+            position: "bottom", 
+            pointStyle: 'circle', 
             usePointStyle: true,
           },
         },
@@ -85,7 +83,7 @@ var app = new Vue({
               text: "Dates",
             },
             grid: {
-            display: false, // X eksenindeki grid çizgilerini gizle
+            display: false, 
           },
           },
           y: {
@@ -96,11 +94,11 @@ var app = new Vue({
             },
           },
         },
-        onClick: this.onChartClick, // Tıklama olayını bağla
+        onClick: this.onChartClick, 
       },
       selectedDays: 30,
-      clickedDates: [], // Seçilen kolonlar
-      tableData: [],// Tablo verisi
+      clickedDates: [], 
+      tableData: [],
       dailySalesSkuListData: {
         marketplace: "",
         sellerId: "",
@@ -119,6 +117,7 @@ var app = new Vue({
       };
   },  
   methods: {
+    //Authorization
     async handleLogin() {
       try {
         const response = await axios.post(this.baseURL + '/oauth/token', {
@@ -147,11 +146,12 @@ var app = new Vue({
         console.error('Error:', error.response ? error.response.data : error.message);
       }
     },
+    //Get user information
     userInfo(email, accessToken) {
       const config = {
         headers: {
-          Authorization: 'Bearer ' + accessToken, // Örnek bir header
-          'Content-Type': 'application/json', // İçerik türü
+          Authorization: 'Bearer ' + accessToken, 
+          'Content-Type': 'application/json', 
         },
       };
       const data = {
@@ -171,6 +171,7 @@ var app = new Vue({
         console.error('Hata:', error);
       });
     },
+    //The data of the columns in the chart
     dailySalesOverview(data) {
       data.day = this.selectedDays;
       axios.post(this.baseURL + '/data/daily-sales-overview/', data, {
@@ -181,8 +182,8 @@ var app = new Vue({
       }).then(response => {
         console.log('Response3', response.data);
         
-        // xAxis.categories'yi güncelle
-        this.chartData.labels = response.data.Data.item.map(i => i.date); // Veriyi al ve xAxis'e ekle
+        // xAxis.categories update
+        this.chartData.labels = response.data.Data.item.map(i => i.date); 
         this.chartData.datasets[0].data = response.data.Data.item.map(i => i.profit);
         this.chartData.datasets[1].data = response.data.Data.item.map(i => i.fbaAmount);
         this.chartData.datasets[2].data = response.data.Data.item.map(i => i.fbmAmount);
@@ -190,6 +191,7 @@ var app = new Vue({
         console.error('Error:', error);
       });
     },
+    //The data of the table
     dailySalesSkuList(data) {
         axios.post(this.baseURL + '/data/daily-sales-sku-list/', data, {
           headers: {
@@ -205,6 +207,7 @@ var app = new Vue({
         }).catch(error => {console.error("Error fetching data:", error);
         });
     },
+    //The data of last column in the table
     getSkuRefundRate(data) {
       axios.post(this.baseURL + '/data/get-sku-refund-rate/', data, {
         headers: {
@@ -227,13 +230,13 @@ var app = new Vue({
       }).catch(error => {console.error("Error fetching data:", error);
       });
   },
-    updateChart() {
-      this.dailySalesOverview(this.dailySalesOverviewData)
-    },
-     onChartClick(event) {
-      // Chart.js instance'ına erişim
+  //Chart update
+  updateChart() {
+    this.dailySalesOverview(this.dailySalesOverviewData)
+  },
+  //Select column of chart 
+  onChartClick(event) {
     const chart = this.$refs.barChart.$data._chart;
-
     // Take information of clicked element
     const activePoints = chart.getElementsAtEventForMode(
       event,
@@ -241,16 +244,15 @@ var app = new Vue({
       { intersect: true },
       false
     );
-    // Chart.js instance ve aktif elemanları al
     const activeElements = this.$refs.barChart.chartData.labels[activePoints[0].index];
     
     if (activeElements) {
       
       console.log("Clicked Label:", activeElements);
-
       this.handleChartClick(activeElements); // Start process
     }
   },
+  //Change click date
   handleChartClick(clickedLabel) {
     if (!clickedLabel) return;
     if (this.clickedDates.includes(clickedLabel)) return; // same date is not select
